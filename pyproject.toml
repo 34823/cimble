@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cimble"
+version = "0.1.0"
+description = "Progressive, self-splitting project memory for Claude Code (and friends)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Dima" }]
+
+[project.scripts]
+cimble = "cimble.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["cimble*"]
+
+[tool.setuptools.package-data]
+"cimble" = ["templates/*.md"]
+
+[project.optional-dependencies]
+dev = ["pytest"]

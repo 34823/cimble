@@ -1,0 +1,17 @@
+{
+  "description": "cimble: warn/block when an edited CLAUDE.md or constitution.md crosses its growth threshold (120/150 lines by default).",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/check_memory_hook.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
