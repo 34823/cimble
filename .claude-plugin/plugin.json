@@ -1,6 +1,6 @@
 {
   "name": "cimble",
-  "description": "Progressive, self-splitting project memory for Claude Code: CLAUDE.md grows into a constitution, a constitution grows into topics, one layer at a time.",
+  "description": "Progressive, self-splitting project memory for Claude Code: any CLAUDE.md section that outgrows its slot carves into its own memory/ topic file, one layer at a time.",
   "author": {
     "name": "Dima"
   }

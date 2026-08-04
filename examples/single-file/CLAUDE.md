@@ -17,3 +17,7 @@ than keeping state in sync.
 
 Switched from polling to a systemd timer — 2026-02-01. Polling kept the process alive for no
 reason; the job runs once, does its thing, exits.
+
+## Topics
+
+<!-- Empty — nothing has grown enough to carve out yet. -->

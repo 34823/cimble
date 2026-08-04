@@ -10,14 +10,14 @@ try:
 except ModuleNotFoundError:  # Python < 3.11
     import tomli as tomllib  # type: ignore
 
-DEFAULT_CLAUDE_MD_THRESHOLD = 120
-DEFAULT_CONSTITUTION_THRESHOLD = 150
+DEFAULT_FILE_THRESHOLD = 120
+DEFAULT_SECTION_THRESHOLD = 40
 
 
 @dataclass
 class Config:
-    claude_md_threshold: int = DEFAULT_CLAUDE_MD_THRESHOLD
-    constitution_threshold: int = DEFAULT_CONSTITUTION_THRESHOLD
+    file_threshold: int = DEFAULT_FILE_THRESHOLD
+    section_threshold: int = DEFAULT_SECTION_THRESHOLD
     strict: bool = False
 
 
@@ -34,25 +34,25 @@ def _env_bool(value: str) -> bool:
 
 def resolve_config(
     root: Path,
-    cli_claude_md_threshold: int | None = None,
-    cli_constitution_threshold: int | None = None,
+    cli_file_threshold: int | None = None,
+    cli_section_threshold: int | None = None,
     cli_strict: bool | None = None,
 ) -> Config:
     toml_data = _load_toml(Path(root) / "cimble.toml")
 
-    if cli_claude_md_threshold is not None:
-        claude_md_threshold = cli_claude_md_threshold
-    elif "CIMBLE_CLAUDE_MD_THRESHOLD" in os.environ:
-        claude_md_threshold = int(os.environ["CIMBLE_CLAUDE_MD_THRESHOLD"])
+    if cli_file_threshold is not None:
+        file_threshold = cli_file_threshold
+    elif "CIMBLE_FILE_THRESHOLD" in os.environ:
+        file_threshold = int(os.environ["CIMBLE_FILE_THRESHOLD"])
     else:
-        claude_md_threshold = int(toml_data.get("claude_md_threshold", DEFAULT_CLAUDE_MD_THRESHOLD))
+        file_threshold = int(toml_data.get("file_threshold", DEFAULT_FILE_THRESHOLD))
 
-    if cli_constitution_threshold is not None:
-        constitution_threshold = cli_constitution_threshold
-    elif "CIMBLE_CONSTITUTION_THRESHOLD" in os.environ:
-        constitution_threshold = int(os.environ["CIMBLE_CONSTITUTION_THRESHOLD"])
+    if cli_section_threshold is not None:
+        section_threshold = cli_section_threshold
+    elif "CIMBLE_SECTION_THRESHOLD" in os.environ:
+        section_threshold = int(os.environ["CIMBLE_SECTION_THRESHOLD"])
     else:
-        constitution_threshold = int(toml_data.get("constitution_threshold", DEFAULT_CONSTITUTION_THRESHOLD))
+        section_threshold = int(toml_data.get("section_threshold", DEFAULT_SECTION_THRESHOLD))
 
     if cli_strict:
         strict = True
@@ -62,7 +62,7 @@ def resolve_config(
         strict = bool(toml_data.get("strict", False))
 
     return Config(
-        claude_md_threshold=claude_md_threshold,
-        constitution_threshold=constitution_threshold,
+        file_threshold=file_threshold,
+        section_threshold=section_threshold,
         strict=strict,
     )

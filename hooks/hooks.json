@@ -1,5 +1,5 @@
 {
-  "description": "cimble: warn/block when an edited CLAUDE.md or constitution.md crosses its growth threshold (120/150 lines by default).",
+  "description": "cimble: warn/block when an edited CLAUDE.md or memory/*.md file crosses its growth threshold (120 lines/file, 40 lines/section by default).",
   "hooks": {
     "PostToolUse": [
       {

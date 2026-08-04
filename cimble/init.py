@@ -7,9 +7,9 @@ from typing import Literal
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
-_STAGE1_MARKER = "<!-- cimble:stage1:v1 -->"
-_STAGE2_CLAUDE_MARKER = "<!-- cimble:stage2-claude:v1 -->"
-_STAGE2_CONSTITUTION_MARKER = "<!-- cimble:stage2-constitution:v1 -->"
+_CLAUDE_MD_MARKER = "<!-- cimble:stage1:v1 -->"
+_MEMORY_INDEX_MARKER = "<!-- cimble:memory-index:v1 -->"
+_MEMORY_TOPIC_MARKER = "<!-- cimble:memory-topic:v1 -->"
 
 ActionKind = Literal["created", "skipped-exists", "skipped-dry-run"]
 
@@ -20,9 +20,11 @@ class InitAction:
     action: ActionKind
 
 
-def _render(template_name: str, project_name: str) -> str:
+def _render(template_name: str, substitutions: dict[str, str]) -> str:
     text = (TEMPLATES_DIR / template_name).read_text(encoding="utf-8")
-    return text.replace("{{PROJECT_NAME}}", project_name)
+    for key, value in substitutions.items():
+        text = text.replace("{{" + key + "}}", value)
+    return text
 
 
 def _is_untouched_cimble_file(path: Path, marker: str) -> bool:
@@ -35,7 +37,7 @@ def _is_untouched_cimble_file(path: Path, marker: str) -> bool:
 
 
 def _write_if_absent(
-    path: Path, template_name: str, project_name: str, marker: str, force: bool, dry_run: bool
+    path: Path, template_name: str, substitutions: dict[str, str], marker: str, force: bool, dry_run: bool
 ) -> InitAction:
     if path.exists():
         if not (force and _is_untouched_cimble_file(path, marker)):
@@ -43,38 +45,60 @@ def _write_if_absent(
     if dry_run:
         return InitAction(path, "skipped-dry-run")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(_render(template_name, project_name), encoding="utf-8")
+    path.write_text(_render(template_name, substitutions), encoding="utf-8")
     return InitAction(path, "created")
 
 
 def init(
     project_dir: Path,
-    stage: int = 1,
     project_name: str | None = None,
     force: bool = False,
     dry_run: bool = False,
 ) -> list[InitAction]:
+    """Scaffold a starting CLAUDE.md — the only thing `cimble init` generates without a target.
+
+    Splitting content out into memory/ is a per-project judgment call (what moves where), so it's
+    not automated here — use `init_index`/`init_topic` to scaffold the *shape* of a split once
+    you've decided to make one, with a correctly formatted backlink.
+    """
     project_dir = Path(project_dir)
     project_name = project_name or project_dir.resolve().name
     claude_md = project_dir / "CLAUDE.md"
+    return [
+        _write_if_absent(claude_md, "stage1_claude_md.md", {"PROJECT_NAME": project_name}, _CLAUDE_MD_MARKER, force, dry_run)
+    ]
 
-    if stage == 1:
-        return [_write_if_absent(claude_md, "stage1_claude_md.md", project_name, _STAGE1_MARKER, force, dry_run)]
 
-    if stage == 2:
-        actions = []
-        if claude_md.exists():
-            actions.append(InitAction(claude_md, "skipped-exists"))
-        else:
-            actions.append(
-                _write_if_absent(claude_md, "stage2_claude_md.md", project_name, _STAGE2_CLAUDE_MARKER, force, dry_run)
-            )
-        constitution = project_dir / "memory" / "constitution.md"
-        actions.append(
-            _write_if_absent(
-                constitution, "stage2_constitution.md", project_name, _STAGE2_CONSTITUTION_MARKER, force, dry_run
-            )
-        )
-        return actions
+def init_index(
+    project_dir: Path,
+    project_name: str | None = None,
+    force: bool = False,
+    dry_run: bool = False,
+) -> InitAction:
+    """Scaffold `memory/index.md`, backlinked to the project's own CLAUDE.md."""
+    project_dir = Path(project_dir)
+    project_name = project_name or project_dir.resolve().name
+    index_path = project_dir / "memory" / "index.md"
+    substitutions = {"PROJECT_NAME": project_name, "BACKLINK": "↑ ../CLAUDE.md"}
+    return _write_if_absent(index_path, "memory_index.md", substitutions, _MEMORY_INDEX_MARKER, force, dry_run)
 
-    raise ValueError(f"unsupported stage: {stage} (only 1 and 2 are scaffoldable — stage 3 is a manual split)")
+
+def init_topic(
+    project_dir: Path,
+    slug: str,
+    project_name: str | None = None,
+    force: bool = False,
+    dry_run: bool = False,
+) -> InitAction:
+    """Scaffold `memory/<slug>.md`, backlinked to `memory/index.md` if it exists, else CLAUDE.md."""
+    project_dir = Path(project_dir)
+    project_name = project_name or project_dir.resolve().name
+    topic_path = project_dir / "memory" / f"{slug}.md"
+    index_path = project_dir / "memory" / "index.md"
+    backlink_target = "index.md" if index_path.is_file() else "../CLAUDE.md"
+    substitutions = {
+        "PROJECT_NAME": project_name,
+        "TOPIC_NAME": slug,
+        "BACKLINK": f"↑ {backlink_target}",
+    }
+    return _write_if_absent(topic_path, "memory_topic.md", substitutions, _MEMORY_TOPIC_MARKER, force, dry_run)
