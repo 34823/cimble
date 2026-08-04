@@ -1,5 +1,9 @@
 # cimble
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+![No server, no vector DB](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
+
 Progressive, self-splitting project memory for Claude Code (and any agent that reads a
 `CLAUDE.md`-shaped file).
 
@@ -21,6 +25,28 @@ That's the whole idea. Everything below is detail.
 `CLAUDE.md` files rot in one of two directions: they stay too small to be useful, or they grow
 into a 400-line wall nobody reads before editing. cimble gives growth a shape instead of a
 ceiling — a project's memory is allowed to get big, but only by branching, never by piling on.
+
+## Why not an MCP memory server
+
+Most "memory for Claude Code" projects solve retrieval by adding infrastructure: an MCP
+server process, a vector database, embeddings, a background indexer — sometimes several of
+these stacked together. That buys semantic search, at the cost of a service to run, a schema
+to maintain, and results that even the person who set it up can't fully predict or audit.
+
+cimble bets the other way. Memory is plain markdown files, read the exact same way the agent
+already reads `CLAUDE.md` — no server, no embeddings, no ranking step to get wrong. Retrieval
+is a fixed rule, not a similarity score: **lazy descent** from `CLAUDE.md`, one hop into
+`memory/` only if a hook matches the task. What gets read is exactly what a human can predict
+by reading the same file the agent just read. Growth is bounded by construction — the
+40/120-line thresholds — not by summarization after the fact, so there's no slow drift toward
+context bloat that then needs its own compression layer to fix. And because it's just files in
+git, every memory is diffable, reviewable in a normal PR, and portable to any agent that reads
+a `CLAUDE.md`-shaped file — not locked to one vendor's plugin format.
+
+The trade-off is real: no fuzzy search across everything ever written. cimble's bet is that for
+how an agent actually works session to session, a handful of well-named hooks beats a large
+index it has to query — simpler to reason about, and in practice more precise, than a fleet of
+MCP memory servers doing semantic retrieval underneath.
 
 ## How it grows
 
