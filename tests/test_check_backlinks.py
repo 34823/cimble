@@ -40,3 +40,20 @@ def test_cyclic_backlink_chain_is_flagged(tmp_project):
     findings = {f.path.name: f.status for f in check_backlinks(tmp_project)}
     assert findings["a.md"] == "cyclic"
     assert findings["b.md"] == "cyclic"
+
+
+def test_markdown_link_backlink_is_ok(tmp_project):
+    _write(tmp_project / "CLAUDE.md", "# CLAUDE.md\n")
+    _write(tmp_project / "memory" / "index.md", "↑ [../CLAUDE.md](../CLAUDE.md)\n\n# Index\n")
+    (finding,) = check_backlinks(tmp_project)
+    assert finding.status == "ok"
+
+
+def test_backlink_after_frontmatter_is_ok(tmp_project):
+    _write(tmp_project / "CLAUDE.md", "# CLAUDE.md\n")
+    _write(
+        tmp_project / "memory" / "index.md",
+        "---\nname: index\ndescription: test\n---\n\n↑ [../CLAUDE.md](../CLAUDE.md)\n\n# Index\n",
+    )
+    (finding,) = check_backlinks(tmp_project)
+    assert finding.status == "ok"

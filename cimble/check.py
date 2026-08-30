@@ -11,7 +11,10 @@ from .config import DEFAULT_FILE_THRESHOLD, DEFAULT_SECTION_THRESHOLD
 
 WIKILINK_RE = re.compile(r"\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]")
 FRONTMATTER_NAME_RE = re.compile(r"^name:\s*(\S+)", re.MULTILINE)
-BACKLINK_RE = re.compile(r"^↑\s+(\S+)\s*$")
+FRONTMATTER_RE = re.compile(r"\A---\n.*?\n---\n", re.DOTALL)
+# Accepts both a bare path (`↑ ../CLAUDE.md`) and a markdown link (`↑ [../CLAUDE.md](../CLAUDE.md)`),
+# so a file's backlink can render as a clickable link without failing the check.
+BACKLINK_RE = re.compile(r"^↑\s+(?:\[[^\]]*\]\(([^)]+)\)|(\S+))\s*$")
 
 _MAX_CHAIN_DEPTH = 10
 
@@ -26,6 +29,11 @@ def _first_nonempty_line(text: str) -> str | None:
         if line.strip():
             return line.strip()
     return None
+
+
+def _strip_frontmatter(text: str) -> str:
+    """Drop a leading `---\\n...\\n---\\n` YAML block, if present, before backlink lookup."""
+    return FRONTMATTER_RE.sub("", text, count=1)
 
 
 def find_claude_md_files(root: Path) -> list[Path]:
@@ -171,12 +179,14 @@ class BacklinkFinding:
 
 
 def _backlink_target(path: Path) -> str | None:
-    text = path.read_text(encoding="utf-8")
+    text = _strip_frontmatter(path.read_text(encoding="utf-8"))
     line = _first_nonempty_line(text)
     if not line:
         return None
     match = BACKLINK_RE.match(line)
-    return match.group(1) if match else None
+    if not match:
+        return None
+    return match.group(1) or match.group(2)
 
 
 def check_backlinks(root: Path) -> list[BacklinkFinding]:
