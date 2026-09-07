@@ -1,38 +1,38 @@
 # CLAUDE.md
 
-`cimble` — open-source Python-тулкит: прогрессивная, самодробящаяся память проекта для
-Claude Code. Методология описана в `docs/methodology.md` и `README.md` — не дублирую здесь.
+`cimble` — an open-source Python toolkit: progressive, self-splitting project memory for
+Claude Code. The methodology lives in `docs/methodology.md` and `README.md` — not duplicated here.
 
-## Запуск
+## Running
 
 ```bash
-# из корня cimble/ (venv уже настроен в .venv)
-cimble init <project>                        # стартовый CLAUDE.md
-cimble init <project> --topic <slug>         # вынести раздел в memory/<slug>.md
-cimble init <project> --index                # вынести раздел-индекс в memory/index.md
-cimble check <project>                       # что превысило порог (раздел/файл/backlink)
-cimble check <project> --strict              # то же, но exit non-zero (для CI)
+# from the cimble/ root (venv already set up in .venv)
+cimble init <project>                        # starter CLAUDE.md
+cimble init <project> --topic <slug>         # carve a section out into memory/<slug>.md
+cimble init <project> --index                # carve the topic index out into memory/index.md
+cimble check <project>                       # what crossed a threshold (section/file/backlink)
+cimble check <project> --strict              # same, but exit non-zero (for CI)
 cimble check <project> --check-wikilinks
 ```
 
-Тесты: `pytest` из корня (`tests/`, покрывает `check`, `init`, wikilinks).
+Tests: `pytest` from the root (`tests/`, covers `check`, `init`, wikilinks).
 
-## Структура
+## Layout
 
-- `cimble/` — сам пакет (`cli.py`, `init.py`, `check.py`, `config.py`, `templates/`).
-- `hooks/` — `check_memory_hook.py` + `hooks.json`, PostToolUse-хук на Edit/Write.
-- `skills/cimble/` — скилл для Claude Code (`/cimble`).
-- `examples/` — вымышленные иллюстрации стадий 1–3, без реальных данных.
-- `docs/methodology.md` — полное описание для внешних читателей.
+- `cimble/` — the package itself (`cli.py`, `init.py`, `check.py`, `config.py`, `templates/`).
+- `hooks/` — `check_memory_hook.py` + `hooks.json`, a PostToolUse hook on Edit/Write.
+- `skills/cimble/` — the Claude Code skill (`/cimble`).
+- `examples/` — fictional illustrations of stages 1–3, no real data.
+- `docs/methodology.md` — the full write-up for outside readers.
 
-## Что нельзя
+## Don't
 
-- Не класть в `examples/` реальные данные из других проектов (`alpha-search`, `gemgymbot`) —
-  только вымышленные структуры, это публичный репозиторий.
-- Не хардкодить пороги 120/40 в код — они настраиваются через CLI-флаг /
-  `CIMBLE_*` env / `cimble.toml`, дефолты только запасной вариант.
+- Don't put real data from other projects (`alpha-search`, `gemgymbot`) into `examples/` —
+  fictional structures only, this is a public repository.
+- Don't hardcode the 120/40 thresholds in the code — they are configurable via a CLI flag /
+  `CIMBLE_*` env / `cimble.toml`; the defaults are only a fallback.
 
-## Публикация
+## Publishing
 
-Репозиторий — github.com/34823/cimble, публичный. Проверять дифф на секреты/личные данные
-перед пушем строже обычного.
+The repository is github.com/34823/cimble, public. Check diffs for secrets and personal data
+more strictly than usual before pushing.
