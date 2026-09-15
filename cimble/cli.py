@@ -6,7 +6,14 @@ import json
 import sys
 from pathlib import Path
 
-from .check import check_all_sections, check_backlinks, check_thresholds, check_wikilinks
+from .check import (
+    check_all_sections,
+    check_backlinks,
+    check_missing_links,
+    check_orphans,
+    check_thresholds,
+    check_wikilinks,
+)
 from .config import resolve_config
 from .init import init as init_project
 from .init import init_index, init_topic
@@ -31,6 +38,8 @@ def _add_check_parser(subparsers: argparse._SubParsersAction) -> None:
         parser.add_argument("--file-threshold", type=int, default=None)
         parser.add_argument("--section-threshold", type=int, default=None)
         parser.add_argument("--check-wikilinks", action="store_true")
+        parser.add_argument("--check-missing-links", action="store_true")
+        parser.add_argument("--check-orphans", action="store_true")
         parser.add_argument("--strict", action="store_true")
         parser.add_argument("--format", choices=("text", "json"), default="text")
         parser.set_defaults(handler=_run_check)
@@ -85,6 +94,9 @@ def _run_check(args: argparse.Namespace) -> int:
         if memory_root.is_dir():
             broken_wikilinks = [w for w in check_wikilinks(memory_root) if not w.resolved]
 
+    missing_links = check_missing_links(root) if args.check_missing_links else []
+    orphans = check_orphans(root) if args.check_orphans else []
+
     if args.format == "json":
         payload = {
             "findings": [
@@ -101,6 +113,11 @@ def _run_check(args: argparse.Namespace) -> int:
             "broken_wikilinks": [
                 {"source": str(w.source), "target": w.target} for w in broken_wikilinks
             ],
+            "missing_links": [
+                {"path": str(m.path), "target_slug": m.target_slug, "target_path": str(m.target_path)}
+                for m in missing_links
+            ],
+            "orphans": [{"path": str(o.path), "slug": o.slug} for o in orphans],
         }
         print(json.dumps(payload, indent=2))
     else:
@@ -113,8 +130,12 @@ def _run_check(args: argparse.Namespace) -> int:
             print(f"{b.path}  backlink {b.status.upper()} — {b.hint}", file=sys.stderr)
         for w in broken_wikilinks:
             print(f"{w.source}  broken wikilink -> [[{w.target}]]", file=sys.stderr)
+        for m in missing_links:
+            print(f"{m.path}  {m.hint}", file=sys.stderr)
+        for o in orphans:
+            print(f"{o.path}  ORPHAN — {o.hint}", file=sys.stderr)
 
-    if config.strict and (over or over_sections or broken_backlinks or broken_wikilinks):
+    if config.strict and (over or over_sections or broken_backlinks or broken_wikilinks or missing_links or orphans):
         return 1
     return 0
 

@@ -10,6 +10,7 @@ from typing import Literal
 from .config import DEFAULT_FILE_THRESHOLD, DEFAULT_SECTION_THRESHOLD
 
 WIKILINK_RE = re.compile(r"\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]")
+MARKDOWN_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 FRONTMATTER_NAME_RE = re.compile(r"^name:\s*(\S+)", re.MULTILINE)
 FRONTMATTER_RE = re.compile(r"\A---\n.*?\n---\n", re.DOTALL)
 # Accepts both a bare path (`↑ ../CLAUDE.md`) and a markdown link (`↑ [../CLAUDE.md](../CLAUDE.md)`),
@@ -255,4 +256,132 @@ def check_wikilinks(memory_root: Path) -> list[WikilinkFinding]:
         for match in WIKILINK_RE.finditer(text):
             target = match.group(1).strip()
             findings.append(WikilinkFinding(path, target, target in index))
+    return findings
+
+
+# --- missing links ----------------------------------------------------------
+
+
+def _canonical_slugs(memory_root: Path) -> dict[Path, str]:
+    """One slug per file: its frontmatter `name:` if present, else the filename stem."""
+    result: dict[Path, str] = {}
+    for path in memory_root.rglob("*.md"):
+        text = path.read_text(encoding="utf-8")
+        match = FRONTMATTER_NAME_RE.search(text)
+        result[path] = match.group(1) if match else path.stem
+    return result
+
+
+def _slug_words(slug: str) -> list[str]:
+    return [w for w in re.split(r"[-_]+", slug) if w]
+
+
+def _slug_pattern(slug: str) -> re.Pattern[str]:
+    """Match a slug as prose too: `project-gnsh` also matches `project gnsh`/`project_gnsh`."""
+    words = _slug_words(slug)
+    return re.compile(r"\b" + r"[-_ ]+".join(re.escape(w) for w in words) + r"\b", re.IGNORECASE)
+
+
+def _linked_targets(path: Path, canonical: dict[Path, str]) -> set[Path]:
+    """Files `path` points to, via `[[wikilink]]` (resolved by slug) or `[markdown](link)` (resolved by path)."""
+    text = path.read_text(encoding="utf-8")
+    body = _strip_frontmatter(text)
+    slug_to_path = {slug: p for p, slug in canonical.items()}
+    targets: set[Path] = set()
+    for m in WIKILINK_RE.finditer(body):
+        slug = m.group(1).strip()
+        if slug in slug_to_path:
+            targets.add(slug_to_path[slug])
+    for m in MARKDOWN_LINK_RE.finditer(body):
+        link = m.group(1).strip()
+        if link.startswith(("http://", "https://", "#", "mailto:")):
+            continue
+        candidate = (path.parent / link).resolve()
+        if candidate in canonical:
+            targets.add(candidate)
+    return targets
+
+
+@dataclass
+class MissingLinkFinding:
+    path: Path
+    target_slug: str
+    target_path: Path
+
+    @property
+    def hint(self) -> str:
+        return f"mentions [[{self.target_slug}]] as plain text but doesn't link it — add `[[{self.target_slug}]]`"
+
+
+def check_missing_links(root: Path) -> list[MissingLinkFinding]:
+    """Flag a file that mentions another memory topic by name/slug in prose without linking it
+    (neither `[[wikilink]]` nor a markdown `[text](path)` link to that file).
+
+    Single-word slugs (e.g. an index file named `MEMORY`) are skipped as targets — a common
+    word matches too much prose to be a useful signal.
+    """
+    root = Path(root)
+    memory_root = root / "memory"
+    if not memory_root.is_dir():
+        return []
+
+    canonical = {p.resolve(): slug for p, slug in _canonical_slugs(memory_root).items()}
+    findings: list[MissingLinkFinding] = []
+    for path, _own_slug in canonical.items():
+        text = path.read_text(encoding="utf-8")
+        body = _strip_frontmatter(text)
+        linked = _linked_targets(path, canonical)
+        body_without_links = MARKDOWN_LINK_RE.sub("", WIKILINK_RE.sub("", body))
+
+        for target_path, target_slug in canonical.items():
+            if target_path == path or target_path in linked:
+                continue
+            if len(_slug_words(target_slug)) < 2:
+                continue
+            if _slug_pattern(target_slug).search(body_without_links):
+                findings.append(MissingLinkFinding(path, target_slug, target_path))
+    return findings
+
+
+# --- orphans ------------------------------------------------------------------
+
+
+@dataclass
+class OrphanFinding:
+    path: Path
+    slug: str
+
+    @property
+    def hint(self) -> str:
+        return "no other memory file links here and no CLAUDE.md mentions it — unreachable from a future session"
+
+
+def check_orphans(root: Path) -> list[OrphanFinding]:
+    """Flag a memory file that nothing else points back to: no incoming `[[wikilink]]` or
+    markdown link from another memory file or a CLAUDE.md index/dispatch table, and its slug
+    isn't even mentioned there as plain text."""
+    root = Path(root)
+    memory_root = root / "memory"
+    if not memory_root.is_dir():
+        return []
+
+    canonical = {p.resolve(): slug for p, slug in _canonical_slugs(memory_root).items()}
+    other_files = find_memory_files(root) + find_claude_md_files(root)
+
+    incoming: set[Path] = set()
+    for other in other_files:
+        incoming |= _linked_targets(other, canonical)
+
+    findings: list[OrphanFinding] = []
+    for path, slug in canonical.items():
+        if path in incoming:
+            continue
+        pattern = _slug_pattern(slug)
+        mentioned = any(
+            pattern.search(other.read_text(encoding="utf-8"))
+            for other in other_files
+            if other.resolve() != path
+        )
+        if not mentioned:
+            findings.append(OrphanFinding(path, slug))
     return findings

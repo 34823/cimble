@@ -13,6 +13,8 @@ cimble init <project> --index                # carve the topic index out into me
 cimble check <project>                       # what crossed a threshold (section/file/backlink)
 cimble check <project> --strict              # same, but exit non-zero (for CI)
 cimble check <project> --check-wikilinks
+cimble check <project> --check-missing-links   # topic mentioned in prose but not [[linked]]
+cimble check <project> --check-orphans         # memory file nothing points back to
 ```
 
 Tests: `pytest` from the root (`tests/`, covers `check`, `init`, wikilinks).
