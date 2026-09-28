@@ -29,7 +29,7 @@ Tests: `pytest` from the root (`tests/`, covers `check`, `init`, wikilinks).
 
 ## Don't
 
-- Don't put real data from other projects (`alpha-search`, `gemgymbot`) into `examples/` —
+- Don't put real data from other projects (`gnsh`, `gemgymbot`) into `examples/` —
   fictional structures only, this is a public repository.
 - Don't hardcode the 120/40 thresholds in the code — they are configurable via a CLI flag /
   `CIMBLE_*` env / `cimble.toml`; the defaults are only a fallback.
