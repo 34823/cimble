@@ -6,7 +6,6 @@ Claude Code. The methodology lives in `docs/methodology.md` and `README.md` — 
 ## Running
 
 ```bash
-# from the cimble/ root (venv already set up in .venv)
 cimble init <project>                        # starter CLAUDE.md
 cimble init <project> --topic <slug>         # carve a section out into memory/<slug>.md
 cimble init <project> --index                # carve the topic index out into memory/index.md
@@ -15,13 +14,16 @@ cimble check <project> --strict              # same, but exit non-zero (for CI)
 cimble check <project> --check-wikilinks
 cimble check <project> --check-missing-links   # topic mentioned in prose but not [[linked]]
 cimble check <project> --check-orphans         # memory file nothing points back to
+cimble check <project> --full                  # all checks + stale files + duplicated lines, markdown report
+cimble check <parent> --each --exclude <dir>   # same, for every subfolder that has a CLAUDE.md
+# `cimble audit` = `check --full` (alias). Read-only; with --strict exits 1 if anything is found.
 ```
 
 Tests: `pytest` from the root (`tests/`, covers `check`, `init`, wikilinks).
 
 ## Layout
 
-- `cimble/` — the package itself (`cli.py`, `init.py`, `check.py`, `config.py`, `templates/`).
+- `cimble/` — the package itself (`cli.py`, `init.py`, `check.py`, `audit.py`, `config.py`, `templates/`).
 - `hooks/` — `check_memory_hook.py` + `hooks.json`, a PostToolUse hook on Edit/Write.
 - `skills/cimble/` — the Claude Code skill (`/cimble`).
 - `examples/` — fictional illustrations of stages 1–3, no real data.

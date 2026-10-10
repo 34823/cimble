@@ -19,7 +19,7 @@ same kind of object.
 - `cimble init --topic <slug> [project_dir]` — scaffold `memory/<slug>.md`, backlinked to
   `memory/index.md` if that exists, else to `CLAUDE.md`.
 - `cimble init --index [project_dir]` — scaffold `memory/index.md`, backlinked to `CLAUDE.md`.
-- `cimble check [path] [--strict] [--check-wikilinks]` (alias: `check-memory`) — report which
+- `cimble check [path] [--full] [--each] [--strict] [--check-wikilinks]` (alias: `check-memory`) — report which
   sections and files have crossed threshold, plus any broken or cyclic backlinks. `--strict`
   exits non-zero on any finding (for CI or a hook in strict mode).
 

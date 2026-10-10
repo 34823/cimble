@@ -6,6 +6,7 @@ import json
 import sys
 from pathlib import Path
 
+from .audit import DEFAULT_STALE_DAYS, audit_project, find_projects, render_markdown
 from .check import (
     check_all_sections,
     check_backlinks,
@@ -32,7 +33,7 @@ def _add_init_parser(subparsers: argparse._SubParsersAction) -> None:
 
 
 def _add_check_parser(subparsers: argparse._SubParsersAction) -> None:
-    for name in ("check", "check-memory"):
+    for name in ("check", "check-memory", "audit"):
         parser = subparsers.add_parser(name, help="Check CLAUDE.md/memory growth thresholds and backlinks")
         parser.add_argument("path", nargs="?", default=".")
         parser.add_argument("--file-threshold", type=int, default=None)
@@ -40,6 +41,10 @@ def _add_check_parser(subparsers: argparse._SubParsersAction) -> None:
         parser.add_argument("--check-wikilinks", action="store_true")
         parser.add_argument("--check-missing-links", action="store_true")
         parser.add_argument("--check-orphans", action="store_true")
+        parser.add_argument("--full", action="store_true", help="every check, plus stale files and duplicated lines, as one markdown report (default for `audit`)")
+        parser.add_argument("--each", action="store_true", help="treat PATH as a parent: check each subfolder that has a CLAUDE.md (implies --full)")
+        parser.add_argument("--exclude", action="append", default=[], help="subfolder name to skip with --each (repeatable)")
+        parser.add_argument("--stale-days", type=int, default=DEFAULT_STALE_DAYS)
         parser.add_argument("--strict", action="store_true")
         parser.add_argument("--format", choices=("text", "json"), default="text")
         parser.set_defaults(handler=_run_check)
@@ -72,7 +77,21 @@ def _run_init(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_full(args: argparse.Namespace) -> int:
+    root = Path(args.path).resolve()
+    projects = find_projects(root, args.each, tuple(args.exclude))
+    if not projects:
+        print(f"no project with a CLAUDE.md under {root}", file=sys.stderr)
+        return 2
+    audits = [audit_project(p, args.stale_days) for p in projects]
+    print(render_markdown(audits, root if args.each or len(projects) > 1 else root.parent, args.stale_days), end="")
+    strict = args.strict or resolve_config(projects[0]).strict
+    return 1 if strict and any(a.issue_count for a in audits) else 0
+
+
 def _run_check(args: argparse.Namespace) -> int:
+    if args.full or args.each or args.command == "audit":
+        return _run_full(args)
     root = Path(args.path)
     config = resolve_config(
         root,
