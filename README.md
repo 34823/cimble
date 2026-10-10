@@ -180,6 +180,10 @@ cimble audit my-project --strict
 cimble audit ~/work --each --exclude archive
 ```
 
+Useful flags: `--stale-days N` (flag files untouched for N days, default 60), `--format json` (for scripts),
+`--brief` (the old short report: thresholds and backlinks only). A scheduled `cimble audit <folder> --each` is a
+cheap way to watch memory across many projects.
+
 `create-memory` works as an alias for `init`; `check` and `check-memory` for `audit`, if that's the name
 you reach for.
 
