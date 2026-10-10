@@ -1,8 +1,36 @@
-# cimble
+<p align="center">
+  <img src="assets/banner.svg" alt="cimble — self-splitting project memory for Claude Code" width="100%">
+</p>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
-![No server, no vector DB](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
+<p align="center">
+  <a href="https://github.com/34823/cimble/stargazers"><img src="https://img.shields.io/github/stars/34823/cimble?style=flat&color=4cc38a" alt="Stars"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/34823/cimble?color=4cc38a" alt="MIT"></a>
+  <a href="https://github.com/34823/cimble/commits/main"><img src="https://img.shields.io/github/last-commit/34823/cimble?color=4cc38a" alt="Last commit"></a>
+  <img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757" alt="Claude Code plugin">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-555" alt="Python 3.10+">
+  <img src="https://img.shields.io/badge/server%20%2F%20vector%20DB-none-4cc38a" alt="No server, no vector DB">
+</p>
+
+# cimble — self-splitting project memory for Claude Code
+
+> A `CLAUDE.md` that grows by branching, not by piling on. A section outgrows its slot — it moves into its own file, with a backlink.
+> Plain markdown, no server, no vector DB.
+
+**Quick start:**
+
+```
+pip install cimble
+cimble init my-project
+cimble audit my-project
+```
+
+Or as a Claude Code plugin (adds the `cimble` skill and the growth-threshold hook):
+
+```
+/plugin install cimble --marketplace 34823/cimble
+```
+
+Works with any agent that reads a `CLAUDE.md`-shaped file.
 
 Progressive, self-splitting project memory for Claude Code (and any agent that reads a
 `CLAUDE.md`-shaped file).
@@ -124,8 +152,11 @@ lateral references between topics.)
 pip install cimble
 ```
 
-Or install as a Claude Code plugin directly from this repo (adds the `cimble` skill and the
-growth-threshold hook automatically).
+Or as a Claude Code plugin (adds the `cimble` skill and the growth-threshold hook automatically):
+
+```
+/plugin install cimble --marketplace 34823/cimble
+```
 
 ## Usage
 
@@ -177,6 +208,12 @@ Full write-up — the diary, the promotion rule (diary → CLAUDE.md/memory, dat
 facts), `feedback_*` entries, backlinks, the diary anchor, lazy descent, the dispatcher-root
 exception, and the hook design — lives in [`docs/methodology.md`](docs/methodology.md).
 
-## License
+## Feedback
 
-MIT.
+If it is useful, a ⭐ on the repo helps others find it ([contributing](CONTRIBUTING.md), [security](SECURITY.md)). Ideas and questions — [Discussions](https://github.com/34823/cimble/discussions); bugs — [Issues](https://github.com/34823/cimble/issues).
+
+MIT license.
+
+## Star history
+
+[![Star History](https://api.star-history.com/svg?repos=34823/cimble&type=Date)](https://star-history.com/#34823/cimble&Date)

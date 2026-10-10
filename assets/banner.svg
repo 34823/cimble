@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f1419"/><stop offset="1" stop-color="#16251f"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <text x="80" y="170" font-size="84" font-weight="700" fill="#ffffff">cimble</text>
+  <text x="80" y="228" font-size="30" fill="#4cc38a">Cambium, but simple.</text>
+  <text x="80" y="300" font-size="22" fill="#9fb1c5">Self-splitting project memory for Claude Code.</text>
+  <text x="80" y="336" font-size="22" fill="#9fb1c5">A section outgrows its slot, it becomes its own file.</text>
+  <text x="80" y="372" font-size="22" fill="#9fb1c5">Plain markdown. No server. No vector DB.</text>
+  <g font-size="20" fill="#0f1419">
+    <rect x="80" y="440" width="170" height="44" rx="22" fill="#4cc38a"/><text x="108" y="469">Claude Code</text>
+    <rect x="266" y="440" width="150" height="44" rx="22" fill="#4cc38a"/><text x="294" y="469">Markdown</text>
+    <rect x="432" y="440" width="120" height="44" rx="22" fill="#4cc38a"/><text x="460" y="469">MIT</text>
+  </g>
+  <text x="80" y="580" font-size="20" fill="#5d7088">github.com/34823/cimble</text>
+  <g>
+    <rect x="700" y="90" width="500" height="460" rx="14" fill="#0b0f14" stroke="#2b3f36" stroke-width="2"/>
+    <circle cx="728" cy="116" r="7" fill="#ff5f56"/><circle cx="752" cy="116" r="7" fill="#ffbd2e"/><circle cx="776" cy="116" r="7" fill="#27c93f"/>
+    <line x1="700" y1="140" x2="1200" y2="140" stroke="#2b3f36" stroke-width="2"/>
+    <g font-size="18">
+      <text x="724" y="176" fill="#4cc38a">$ cimble audit my-project</text>
+      <text x="724" y="222" fill="#ffffff">CLAUDE.md</text><text x="1060" y="222" fill="#9fb1c5">78 lines</text>
+      <text x="724" y="260" fill="#ffffff">## Backend</text><text x="1060" y="260" fill="#ffbd2e">46 &gt; 40</text>
+      <line x1="724" y1="290" x2="1176" y2="290" stroke="#2b3f36"/>
+      <text x="724" y="326" fill="#9fb1c5">carve it out:</text>
+      <text x="724" y="364" fill="#4cc38a">$ cimble init my-project</text>
+      <text x="724" y="394" fill="#4cc38a">    --topic backend</text>
+      <text x="724" y="450" fill="#e6edf3">memory/backend.md</text>
+      <text x="724" y="484" fill="#5d7088">↑ ../CLAUDE.md</text>
+    </g>
+  </g>
+</svg>
