@@ -154,6 +154,8 @@ you reach for.
 
 Thresholds are configurable — CLI flag, then `CIMBLE_FILE_THRESHOLD` / `CIMBLE_SECTION_THRESHOLD`
 / `CIMBLE_STRICT` env vars, then a `cimble.toml` at the project root, then the 120/40 defaults.
+Two toml-only keys: `claude_md_threshold` (a separate line limit for `CLAUDE.md` only) and
+`exempt_sections` (a list of `## ` headings, e.g. a long topic index, that are never flagged).
 Nothing is hardcoded to any one project's layout.
 
 ## As a hook

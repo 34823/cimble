@@ -47,3 +47,10 @@ def test_check_all_sections_scans_claude_md_and_memory(tmp_project):
     findings = check_all_sections(tmp_project, section_threshold=40)
     headings = {f.heading for f in findings}
     assert headings == {"A", "B"}
+
+
+def test_exempt_section_is_not_flagged(tmp_project):
+    path = tmp_project / "CLAUDE.md"
+    body = "\n".join(f"line {i}" for i in range(41))
+    _write(path, f"# Title\n\n## Index\n\n{body}\n")
+    assert check_sections(path, section_threshold=40, exempt=("Index",)) == []

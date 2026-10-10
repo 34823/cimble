@@ -72,10 +72,11 @@ class ThresholdFinding:
 def check_thresholds(
     root: Path,
     file_threshold: int = DEFAULT_FILE_THRESHOLD,
+    claude_md_threshold: int | None = None,
 ) -> list[ThresholdFinding]:
     root = Path(root)
     findings = [
-        ThresholdFinding(path, "claude_md", _count_lines(path), file_threshold)
+        ThresholdFinding(path, "claude_md", _count_lines(path), claude_md_threshold or file_threshold)
         for path in find_claude_md_files(root)
     ]
     findings += [
@@ -88,12 +89,13 @@ def check_thresholds(
 def check_file(
     path: Path,
     file_threshold: int = DEFAULT_FILE_THRESHOLD,
+    claude_md_threshold: int | None = None,
 ) -> ThresholdFinding | None:
     path = Path(path)
     if not path.is_file():
         return None
     if path.name == "CLAUDE.md":
-        return ThresholdFinding(path, "claude_md", _count_lines(path), file_threshold)
+        return ThresholdFinding(path, "claude_md", _count_lines(path), claude_md_threshold or file_threshold)
     if "memory" in path.parts and path.suffix == ".md":
         return ThresholdFinding(path, "memory", _count_lines(path), file_threshold)
     return None
@@ -140,7 +142,11 @@ def _sections(text: str) -> list[tuple[str, int]]:
     return out
 
 
-def check_sections(path: Path, section_threshold: int = DEFAULT_SECTION_THRESHOLD) -> list[SectionFinding]:
+def check_sections(
+    path: Path,
+    section_threshold: int = DEFAULT_SECTION_THRESHOLD,
+    exempt: tuple[str, ...] = (),
+) -> list[SectionFinding]:
     path = Path(path)
     if not path.is_file():
         return []
@@ -148,14 +154,19 @@ def check_sections(path: Path, section_threshold: int = DEFAULT_SECTION_THRESHOL
     return [
         SectionFinding(path, heading, lines, section_threshold)
         for heading, lines in _sections(text)
+        if heading not in exempt
     ]
 
 
-def check_all_sections(root: Path, section_threshold: int = DEFAULT_SECTION_THRESHOLD) -> list[SectionFinding]:
+def check_all_sections(
+    root: Path,
+    section_threshold: int = DEFAULT_SECTION_THRESHOLD,
+    exempt: tuple[str, ...] = (),
+) -> list[SectionFinding]:
     root = Path(root)
     findings: list[SectionFinding] = []
     for path in find_claude_md_files(root) + find_memory_files(root):
-        findings += check_sections(path, section_threshold)
+        findings += check_sections(path, section_threshold, exempt)
     return findings
 
 

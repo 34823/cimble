@@ -59,3 +59,16 @@ def test_custom_thresholds_via_arguments(tmp_project):
     make_file_with_lines(path, 50)
     finding = check_file(path, file_threshold=40)
     assert finding.status == "over"
+
+
+def test_claude_md_threshold_overrides_only_claude_md(tmp_project):
+    from cimble.check import check_file
+
+    claude = tmp_project / "CLAUDE.md"
+    claude.write_text("\n".join(f"l{i}" for i in range(150)) + "\n", encoding="utf-8")
+    assert check_file(claude, 120).status == "over"
+    assert check_file(claude, 120, claude_md_threshold=200).status == "ok"
+    mem = tmp_project / "memory" / "a.md"
+    mem.parent.mkdir(exist_ok=True)
+    mem.write_text("\n".join(f"l{i}" for i in range(150)) + "\n", encoding="utf-8")
+    assert check_file(mem, 120, claude_md_threshold=200).status == "over"

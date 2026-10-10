@@ -19,6 +19,8 @@ class Config:
     file_threshold: int = DEFAULT_FILE_THRESHOLD
     section_threshold: int = DEFAULT_SECTION_THRESHOLD
     strict: bool = False
+    claude_md_threshold: int | None = None  # overrides file_threshold for CLAUDE.md only
+    exempt_sections: tuple[str, ...] = ()  # `## ` headings never flagged as too long
 
 
 def _load_toml(path: Path) -> dict:
@@ -65,4 +67,8 @@ def resolve_config(
         file_threshold=file_threshold,
         section_threshold=section_threshold,
         strict=strict,
+        claude_md_threshold=(
+            int(toml_data["claude_md_threshold"]) if "claude_md_threshold" in toml_data else None
+        ),
+        exempt_sections=tuple(toml_data.get("exempt_sections", ())),
     )

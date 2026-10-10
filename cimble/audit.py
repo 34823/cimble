@@ -90,12 +90,12 @@ def audit_project(project: Path, stale_days: int = DEFAULT_STALE_DAYS) -> Projec
 
     live = set(_live(find_memory_files(project) + find_claude_md_files(project)))
     result.over_files = [
-        (f.path, f.lines, f.threshold) for f in check_thresholds(project, config.file_threshold)
+        (f.path, f.lines, f.threshold) for f in check_thresholds(project, config.file_threshold, config.claude_md_threshold)
         if f.status == "over" and f.path in live
     ]
     result.over_sections = [
         (s.path, s.heading, s.lines, s.threshold)
-        for s in check_all_sections(project, config.section_threshold) if s.status == "over" and s.path in live
+        for s in check_all_sections(project, config.section_threshold, config.exempt_sections) if s.status == "over" and s.path in live
     ]
     result.backlinks = [(b.path, b.status) for b in check_backlinks(project) if b.status != "ok" and b.path in live]
     if (project / "memory").is_dir():

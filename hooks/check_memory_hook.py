@@ -31,13 +31,13 @@ def main() -> int:
 
     messages = []
 
-    finding = check_file(path, config.file_threshold)
+    finding = check_file(path, config.file_threshold, config.claude_md_threshold)
     if finding is not None and finding.status == "over":
         messages.append(
             f"{finding.path} is now {finding.lines} lines (threshold {finding.threshold}) — {finding.hint}."
         )
 
-    for section in check_sections(path, config.section_threshold):
+    for section in check_sections(path, config.section_threshold, config.exempt_sections):
         if section.status == "over":
             messages.append(
                 f"{path} ## {section.heading} is {section.lines} lines (threshold {section.threshold}) — {section.hint}."

@@ -99,8 +99,8 @@ def _run_check(args: argparse.Namespace) -> int:
         cli_section_threshold=args.section_threshold,
         cli_strict=args.strict or None,
     )
-    findings = check_thresholds(root, config.file_threshold)
-    section_findings = check_all_sections(root, config.section_threshold)
+    findings = check_thresholds(root, config.file_threshold, config.claude_md_threshold)
+    section_findings = check_all_sections(root, config.section_threshold, config.exempt_sections)
     backlink_findings = check_backlinks(root)
 
     over = [f for f in findings if f.status == "over"]
