@@ -81,7 +81,7 @@ Every file under `memory/` starts with one fixed-format line pointing at whateve
 ```
 
 or, for a file carved out of an index: `↑ index.md`. This is what lets a cold read of a deep
-topic file trace back to the top — and what `cimble check` parses to catch a broken or renamed
+topic file trace back to the top — and what `cimble audit` parses to catch a broken or renamed
 path, or a copy-paste cycle, before it rots silently.
 
 ## Reading it back: lazy descent
@@ -114,7 +114,7 @@ above it) has no such requirement. See `docs/methodology.md` for the full split.
 Inside `memory/`, files reference each other *sideways* by slug, not by path: `[[debug-conventions]]`,
 not `[debug](../debug/conventions.md)`. The slug comes from a `name:` field in the file's
 frontmatter (falls back to the filename stem). This survives files moving around during a later
-split — paths break, slugs don't. `cimble check --check-wikilinks` flags references that don't
+split — paths break, slugs don't. `cimble audit` flags references that don't
 resolve. (Backlinks, above, are the one mandatory *upward* pointer; wikilinks are optional
 lateral references between topics.)
 
@@ -139,17 +139,17 @@ cimble init my-project --topic backend
 # Once the topic index itself needs its own file
 cimble init my-project --index
 
-# See what's over threshold, plus any broken backlinks
-cimble check my-project
+# One read-only report: thresholds, backlinks, wikilinks, orphans, stale files, duplicated lines
+cimble audit my-project
 
 # Same, but exit non-zero if anything's over (for CI)
-cimble check my-project --strict
+cimble audit my-project --strict
 
-# Also flag [[wikilinks]] that don't resolve
-cimble check my-project --check-wikilinks
+# Every project under a folder
+cimble audit ~/work --each --exclude archive
 ```
 
-`create-memory` and `check-memory` work as aliases for `init` and `check`, if that's the name
+`create-memory` works as an alias for `init`; `check` and `check-memory` for `audit`, if that's the name
 you reach for.
 
 Thresholds are configurable — CLI flag, then `CIMBLE_FILE_THRESHOLD` / `CIMBLE_SECTION_THRESHOLD`
@@ -158,7 +158,7 @@ Nothing is hardcoded to any one project's layout.
 
 ## As a hook
 
-Installing this as a Claude Code plugin wires `cimble check` into `PostToolUse` on `Edit`/`Write`
+Installing this as a Claude Code plugin wires `cimble audit` into `PostToolUse` on `Edit`/`Write`
 — the moment an edit pushes a section, or a whole file, over threshold, you get a `systemMessage`
 nudge (or, in `--strict`/`CIMBLE_STRICT` mode, an error Claude has to act on before continuing).
 See `docs/methodology.md` for the full hook design and why `PostToolUse` beats a session-end

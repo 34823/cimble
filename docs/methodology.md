@@ -35,7 +35,7 @@ carved out of `CLAUDE.md` directly — the type is "carved-out topic file," full
 **There's a whole-file backstop, too.** If `CLAUDE.md` (or any file under `memory/`) crosses
 ~120 lines even though no single section is individually over 40, that's still a signal — five
 35-line sections is a file worth revisiting even though the per-section rule never tripped.
-`cimble check` flags this independently of the per-section check.
+`cimble audit` flags this independently of the per-section check.
 
 **Splitting content is manual; scaffolding the shape isn't.** `cimble init` writes the starting
 `CLAUDE.md`. `cimble init --topic <slug>` writes `memory/<slug>.md` with a correctly formatted
@@ -51,10 +51,10 @@ Every file `cimble` scaffolds under `memory/` starts with a fixed-format line:
 ↑ <relative path to whatever produced this file>
 ```
 
-Exactly that format — no variation — because `cimble check` parses it with a regex, not prose
+Exactly that format — no variation — because `cimble audit` parses it with a regex, not prose
 sniffing. Rules:
 
-- The target must resolve to a file that exists. `cimble check` flags a backlink whose target
+- The target must resolve to a file that exists. `cimble audit` flags a backlink whose target
   doesn't resolve — this is the thing that would otherwise rot silently the first time a file
   gets renamed or moved.
 - Following backlinks upward must terminate at a `CLAUDE.md` within 10 hops. A longer chain, or
@@ -64,7 +64,7 @@ sniffing. Rules:
   at their true common ancestor (usually a dispatcher root's own memory, if that pattern applies)
   — not duplicated in both, which would desync the two copies over time.
 
-This is deliberately mechanical rather than semantic — `cimble check` can tell you a backlink is
+This is deliberately mechanical rather than semantic — `cimble audit` can tell you a backlink is
 missing or broken, but it can't tell you a *hook* has gone stale (see below). Different problem,
 different tool.
 
@@ -168,7 +168,7 @@ above). `/project-a/CLAUDE.md` follows the normal splitting rule.
 Inside `memory/`, cross-references use `[[slug]]`, resolved against a `name:` field in each
 file's frontmatter (falling back to the filename stem if there's no frontmatter). Linking by
 slug instead of by relative path means a later split — which moves files into new subfolders —
-doesn't silently break every existing reference. `cimble check --check-wikilinks` scans
+doesn't silently break every existing reference. `cimble audit` scans
 `memory/**/*.md`, builds the slug index, and flags any `[[target]]` that doesn't resolve.
 
 This check is off by default (`--check-wikilinks`) — it's a hygiene tool, not a hard requirement,
@@ -198,7 +198,7 @@ Edits made outside `Edit`/`Write` (e.g. `cat >> CLAUDE.md` via `Bash`) don't tri
 
 - Automating what content moves where during a split — a per-project judgment call, not
   something a tool should decide.
-- Judging whether a hook is still accurate — semantic, not mechanical; `cimble check` only
+- Judging whether a hook is still accurate — semantic, not mechanical; `cimble audit` only
   verifies backlinks resolve, not that hooks describe their target correctly.
 - A worked, organically-grown deep-split example — every example in this repo is illustrative,
   built to show the shape, not a project that was actually observed crossing thresholds and

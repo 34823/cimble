@@ -33,16 +33,16 @@ def _add_init_parser(subparsers: argparse._SubParsersAction) -> None:
 
 
 def _add_check_parser(subparsers: argparse._SubParsersAction) -> None:
-    for name in ("check", "check-memory", "audit"):
-        parser = subparsers.add_parser(name, help="Check CLAUDE.md/memory growth thresholds and backlinks")
+    for name in ("audit", "check", "check-memory"):
+        parser = subparsers.add_parser(name, help="Audit CLAUDE.md/memory: thresholds, links, orphans, stale files, duplicated lines (`check` is an alias)")
         parser.add_argument("path", nargs="?", default=".")
         parser.add_argument("--file-threshold", type=int, default=None)
         parser.add_argument("--section-threshold", type=int, default=None)
         parser.add_argument("--check-wikilinks", action="store_true")
         parser.add_argument("--check-missing-links", action="store_true")
         parser.add_argument("--check-orphans", action="store_true")
-        parser.add_argument("--full", action="store_true", help="every check, plus stale files and duplicated lines, as one markdown report (default for `audit`)")
-        parser.add_argument("--each", action="store_true", help="treat PATH as a parent: check each subfolder that has a CLAUDE.md (implies --full)")
+        parser.add_argument("--brief", action="store_true", help="old short output (thresholds/backlinks; opt-in --check-* flags, --format json)")
+        parser.add_argument("--each", action="store_true", help="treat PATH as a parent: audit each subfolder that has a CLAUDE.md")
         parser.add_argument("--exclude", action="append", default=[], help="subfolder name to skip with --each (repeatable)")
         parser.add_argument("--stale-days", type=int, default=DEFAULT_STALE_DAYS)
         parser.add_argument("--strict", action="store_true")
@@ -90,7 +90,7 @@ def _run_full(args: argparse.Namespace) -> int:
 
 
 def _run_check(args: argparse.Namespace) -> int:
-    if args.full or args.each or args.command == "audit":
+    if not args.brief:
         return _run_full(args)
     root = Path(args.path)
     config = resolve_config(

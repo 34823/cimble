@@ -19,14 +19,14 @@ same kind of object.
 - `cimble init --topic <slug> [project_dir]` — scaffold `memory/<slug>.md`, backlinked to
   `memory/index.md` if that exists, else to `CLAUDE.md`.
 - `cimble init --index [project_dir]` — scaffold `memory/index.md`, backlinked to `CLAUDE.md`.
-- `cimble check [path] [--full] [--each] [--strict] [--check-wikilinks]` (alias: `check-memory`) — report which
-  sections and files have crossed threshold, plus any broken or cyclic backlinks. `--strict`
+- `cimble audit [path] [--each] [--strict]` (aliases: `check`, `check-memory`) — one read-only report: which
+  sections and files crossed threshold, broken or cyclic backlinks and wikilinks, orphans, stale files, duplicated lines. `--strict`
   exits non-zero on any finding (for CI or a hook in strict mode).
 
 ## When to use which
 
 - New project, no `CLAUDE.md` yet → `cimble init`.
-- `CLAUDE.md` already exists and a section feels long → `cimble check` first to confirm it's
+- `CLAUDE.md` already exists and a section feels long → `cimble audit` first to confirm it's
   actually over threshold (and check whether it's frequently-used operational content, which is
   allowed to stay long — see `docs/methodology.md`), then `cimble init --topic <slug>` to lay
   down the target file with a correct backlink, then move the content by hand (what moves where

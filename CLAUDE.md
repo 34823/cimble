@@ -9,14 +9,12 @@ Claude Code. The methodology lives in `docs/methodology.md` and `README.md` — 
 cimble init <project>                        # starter CLAUDE.md
 cimble init <project> --topic <slug>         # carve a section out into memory/<slug>.md
 cimble init <project> --index                # carve the topic index out into memory/index.md
-cimble check <project>                       # what crossed a threshold (section/file/backlink)
-cimble check <project> --strict              # same, but exit non-zero (for CI)
-cimble check <project> --check-wikilinks
-cimble check <project> --check-missing-links   # topic mentioned in prose but not [[linked]]
-cimble check <project> --check-orphans         # memory file nothing points back to
-cimble check <project> --full                  # all checks + stale files + duplicated lines, markdown report
-cimble check <parent> --each --exclude <dir>   # same, for every subfolder that has a CLAUDE.md
-# `cimble audit` = `check --full` (alias). Read-only; with --strict exits 1 if anything is found.
+cimble audit <project>                       # everything: thresholds, backlinks, wikilinks, missing links,
+                                             #   orphans, stale files, duplicated lines (markdown, read-only)
+cimble audit <project> --strict              # same, but exit non-zero (for CI)
+cimble audit <parent> --each --exclude <dir> # every subfolder that has a CLAUDE.md
+cimble audit <project> --brief               # old short output (+ --format json, --check-* flags)
+# `check` / `check-memory` are aliases of `audit`.
 ```
 
 Tests: `pytest` from the root (`tests/`, covers `check`, `init`, wikilinks).
