@@ -1,6 +1,6 @@
-# CLAUDE.md
+# Developing cimble
 
-`cimble` — an open-source Python toolkit: progressive, self-splitting project memory for
+How cimble is built and run. `cimble` is an open-source Python toolkit: progressive, self-splitting project memory for
 Claude Code. The methodology lives in `docs/methodology.md` and `README.md` — not duplicated here.
 
 ## Running

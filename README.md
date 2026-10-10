@@ -208,6 +208,8 @@ split — fictitious projects, no real data, just the shape.
 
 ## Docs
 
+Building or hacking on cimble itself: [`docs/DEVELOPING.md`](docs/DEVELOPING.md) (running, layout, rules).
+
 Full write-up — the diary, the promotion rule (diary → CLAUDE.md/memory, dated vs. undated
 facts), `feedback_*` entries, backlinks, the diary anchor, lazy descent, the dispatcher-root
 exception, and the hook design — lives in [`docs/methodology.md`](docs/methodology.md).
