@@ -2,6 +2,9 @@
   "name": "cimble",
   "description": "Progressive, self-splitting project memory for Claude Code: any CLAUDE.md section that outgrows its slot carves into its own memory/ topic file, one layer at a time.",
   "author": {
-    "name": "Dima"
-  }
+    "name": "34823"
+  },
+  "version": "0.1.0",
+  "homepage": "https://github.com/34823/cimble",
+  "license": "MIT"
 }

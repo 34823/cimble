@@ -2,7 +2,7 @@
   "name": "cimble",
   "description": "Development marketplace for cimble: progressive, self-splitting project memory for Claude Code",
   "owner": {
-    "name": "Dima"
+    "name": "34823"
   },
   "plugins": [
     {
@@ -11,7 +11,7 @@
       "version": "0.1.0",
       "source": "./",
       "author": {
-        "name": "Dima"
+        "name": "34823"
       }
     }
   ]
