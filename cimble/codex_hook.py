@@ -86,7 +86,11 @@ def candidate_paths(payload: dict, home: Path | None = None) -> tuple[set[Path],
 
 
 def _config_root(path: Path) -> Path:
-    return next((p for p in path.parents if (p / 'cimble.toml').is_file()), path.parent)
+    if path.name in ('AGENTS.md', 'CLAUDE.md'):
+        return path.parent
+    # A dispatcher root can have a higher instruction limit. It must not leak into
+    # independent child projects; memory uses its own project's configuration.
+    return next((p.parent for p in path.parents if p.name == 'memory'), path.parent)
 
 
 def warnings(payload: dict, state_path: Path, *, now: float | None = None,

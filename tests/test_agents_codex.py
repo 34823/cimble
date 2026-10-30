@@ -132,3 +132,11 @@ def test_claude_hook_checks_agents(tmp_path):
                             capture_output=True, text=True)
     assert result.returncode == 0
     assert '121 lines' in json.loads(result.stdout)['systemMessage']
+
+
+def test_dispatcher_threshold_does_not_leak_into_child_project(tmp_path):
+    write(tmp_path / 'cimble.toml', '[cimble]\nclaude_md_threshold = 400\n')
+    path = write(tmp_path / 'project/AGENTS.md', 'line\n' * 121)
+    result = warnings({'cwd': str(tmp_path), 'tool_input': {'file_path': str(path)}},
+                      tmp_path / 'state.json', home=tmp_path / 'home')
+    assert any('threshold 120' in message and str(path) in message for message in result)
