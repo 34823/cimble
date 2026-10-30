@@ -32,6 +32,24 @@ Or as a Claude Code plugin (adds the `cimble` skill and the growth-threshold hoo
 
 Works with any agent that reads a `CLAUDE.md`-shaped file.
 
+### Codex and shared instructions
+
+Checks also support `AGENTS.md`. When both instruction filenames exist in one directory,
+`AGENTS.md` is checked once and `CLAUDE.md` remains a compatibility entry point. This works
+with Claude wrappers containing `@AGENTS.md`; AGENTS-only projects are included in audits.
+The existing `claude_md_threshold` setting applies to either instruction filename.
+`cimble init` continues to create legacy `CLAUDE.md` scaffolds.
+
+For Codex, configure a command `PostToolUse` hook running `python3 -m cimble.codex_hook`
+with cimble installed in that Python environment. Approve the new hook through Codex's
+normal hook review. The adapter understands `apply_patch`'s `tool_input.command`; for
+shell edits it compares instruction/memory mtimes in the current directory, ancestors,
+immediate projects, shared Claude auto-memory and the main checkout of a git worktree.
+It does not interpret shell commands, follow memory-directory symlinks or walk archives.
+The first scan establishes a baseline for old files; explicit patch paths and recent edits
+are checked immediately. Later changes are checked once per session fingerprint.
+Warnings are advice only: the adapter never rewrites memory or blocks a successful tool.
+
 Progressive, self-splitting project memory for Claude Code (and any agent that reads a
 `CLAUDE.md`-shaped file).
 

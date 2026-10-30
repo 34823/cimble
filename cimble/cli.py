@@ -34,7 +34,7 @@ def _add_init_parser(subparsers: argparse._SubParsersAction) -> None:
 
 def _add_check_parser(subparsers: argparse._SubParsersAction) -> None:
     for name in ("audit", "check", "check-memory"):
-        parser = subparsers.add_parser(name, help="Audit CLAUDE.md/memory: thresholds, links, orphans, stale files, duplicated lines (`check` is an alias)")
+        parser = subparsers.add_parser(name, help="Audit AGENTS.md/CLAUDE.md/memory: thresholds, links, orphans, stale files, duplicated lines (`check` is an alias)")
         parser.add_argument("path", nargs="?", default=".")
         parser.add_argument("--file-threshold", type=int, default=None)
         parser.add_argument("--section-threshold", type=int, default=None)
@@ -42,7 +42,7 @@ def _add_check_parser(subparsers: argparse._SubParsersAction) -> None:
         parser.add_argument("--check-missing-links", action="store_true")
         parser.add_argument("--check-orphans", action="store_true")
         parser.add_argument("--brief", action="store_true", help="old short output (thresholds/backlinks; opt-in --check-* flags, --format json)")
-        parser.add_argument("--each", action="store_true", help="treat PATH as a parent: audit each subfolder that has a CLAUDE.md")
+        parser.add_argument("--each", action="store_true", help="treat PATH as a parent: audit each subfolder with AGENTS.md or CLAUDE.md")
         parser.add_argument("--exclude", action="append", default=[], help="subfolder name to skip with --each (repeatable)")
         parser.add_argument("--stale-days", type=int, default=DEFAULT_STALE_DAYS)
         parser.add_argument("--strict", action="store_true")
@@ -81,7 +81,7 @@ def _run_full(args: argparse.Namespace) -> int:
     root = Path(args.path).resolve()
     projects = find_projects(root, args.each, tuple(args.exclude))
     if not projects:
-        print(f"no project with a CLAUDE.md under {root}", file=sys.stderr)
+        print(f"no project with AGENTS.md or CLAUDE.md under {root}", file=sys.stderr)
         return 2
     audits = [audit_project(p, args.stale_days) for p in projects]
     print(render_markdown(audits, root if args.each or len(projects) > 1 else root.parent, args.stale_days), end="")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PostToolUse adapter: warn/block when an edited CLAUDE.md or memory/*.md file crosses its
+"""PostToolUse adapter: warn/block when edited AGENTS.md, CLAUDE.md or memory/*.md crosses its
 growth threshold (whole-file backstop or a single ## section). Delegates to cimble.check for the
 actual logic."""
 import json
@@ -21,7 +21,7 @@ def main() -> int:
         return 0
 
     path = Path(file_path)
-    if path.name != "CLAUDE.md" and "memory" not in path.parts:
+    if path.name not in ("AGENTS.md", "CLAUDE.md") and "memory" not in path.parts:
         return 0
     if path.suffix != ".md":
         return 0
@@ -32,6 +32,8 @@ def main() -> int:
     messages = []
 
     finding = check_file(path, config.file_threshold, config.claude_md_threshold)
+    if finding is not None:
+        path = finding.path
     if finding is not None and finding.status == "over":
         messages.append(
             f"{finding.path} is now {finding.lines} lines (threshold {finding.threshold}) — {finding.hint}."

@@ -1,4 +1,4 @@
-"""Growth checks for CLAUDE.md / memory/*.md: whole-file backstop, per-section threshold,
+"""Growth checks for AGENTS.md / CLAUDE.md / memory/*.md: whole-file backstop, per-section threshold,
 backlink integrity, and (optionally) wikilinks."""
 from __future__ import annotations
 
@@ -38,7 +38,11 @@ def _strip_frontmatter(text: str) -> str:
 
 
 def find_claude_md_files(root: Path) -> list[Path]:
-    return sorted(root.rglob("CLAUDE.md"))
+    """Instruction files, preferring AGENTS.md in each directory (legacy API name)."""
+    root = Path(root)
+    agents = set(root.rglob("AGENTS.md"))
+    return sorted(agents | {p for p in root.rglob("CLAUDE.md")
+                            if p.with_name("AGENTS.md") not in agents})
 
 
 def find_memory_files(root: Path) -> list[Path]:
@@ -94,7 +98,10 @@ def check_file(
     path = Path(path)
     if not path.is_file():
         return None
-    if path.name == "CLAUDE.md":
+    if path.name in ("AGENTS.md", "CLAUDE.md"):
+        # Claude wrappers (`@AGENTS.md`) must check the actual shared instructions.
+        if path.name == "CLAUDE.md" and path.with_name("AGENTS.md").is_file():
+            path = path.with_name("AGENTS.md")
         return ThresholdFinding(path, "claude_md", _count_lines(path), claude_md_threshold or file_threshold)
     if "memory" in path.parts and path.suffix == ".md":
         return ThresholdFinding(path, "memory", _count_lines(path), file_threshold)
@@ -221,7 +228,7 @@ def check_backlinks(root: Path) -> list[BacklinkFinding]:
         for _ in range(_MAX_CHAIN_DEPTH):
             if current in visited:
                 break
-            if current.name == "CLAUDE.md":
+            if current.name in ("AGENTS.md", "CLAUDE.md"):
                 cyclic = False
                 break
             visited.add(current)

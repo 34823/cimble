@@ -50,14 +50,16 @@ class ProjectAudit:
 
 
 def find_projects(path: Path, each: bool = False, exclude: tuple[str, ...] = ()) -> list[Path]:
-    """`path` itself if it has a CLAUDE.md (unless `each`), else its direct subfolders that do."""
+    """Projects with AGENTS.md or legacy CLAUDE.md, optionally direct subprojects."""
     path = Path(path)
-    if not each and (path / "CLAUDE.md").is_file():
+    def has_instructions(p):
+        return any((p / name).is_file() for name in ("AGENTS.md", "CLAUDE.md"))
+    if not each and has_instructions(path):
         return [path]
     return sorted(
         p for p in path.iterdir()
         if p.is_dir() and p.name not in _SKIP_DIRS and p.name not in exclude
-        and not p.name.startswith(".") and (p / "CLAUDE.md").is_file()
+        and not p.name.startswith(".") and has_instructions(p)
     )
 
 
@@ -111,7 +113,7 @@ def audit_project(project: Path, stale_days: int = DEFAULT_STALE_DAYS) -> Projec
         if age >= stale_days:
             result.stale.append((path, age))
     result.stale.sort(key=lambda item: -item[1])
-    result.duplicates = _duplicates(memory + [project / "CLAUDE.md"])
+    result.duplicates = _duplicates(memory + [p for p in find_claude_md_files(project) if p.parent == project])
     return result
 
 
