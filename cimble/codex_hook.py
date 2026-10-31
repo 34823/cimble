@@ -73,6 +73,7 @@ def candidate_paths(payload: dict, home: Path | None = None) -> tuple[set[Path],
     explicit = {(p if p.is_absolute() else cwd / p).resolve() for p in explicit}
     candidates = set(explicit)
     home = home or Path.home()
+    ignored = [Path(p).resolve() for p in os.environ.get('CIMBLE_IGNORE_PATHS', '').split(os.pathsep) if p]
     for scope in project_scopes(cwd):
         for name in ('AGENTS.md', 'CLAUDE.md'):
             path = scope / name
@@ -80,9 +81,14 @@ def candidate_paths(payload: dict, home: Path | None = None) -> tuple[set[Path],
                 candidates.add(path)
                 break
         candidates.update(_memory_files(scope / 'memory'))
-        encoded = str(scope).replace('/', '-')
-        candidates.update(_memory_files(home / '.claude' / 'projects' / encoded / 'memory'))
-    return candidates, explicit
+        if os.environ.get('CIMBLE_LEGACY_CLAUDE_MEMORY', '1') != '0':
+            encoded = str(scope).replace('/', '-')
+            candidates.update(_memory_files(home / '.claude' / 'projects' / encoded / 'memory'))
+    # Exclusions also apply to explicitly edited generated files and symlink aliases.
+    def allowed(path):
+        resolved = path.resolve()
+        return not any(resolved == root or root in resolved.parents for root in ignored)
+    return {p for p in candidates if allowed(p)}, {p for p in explicit if allowed(p)}
 
 
 def _config_root(path: Path) -> Path:
