@@ -74,7 +74,9 @@ def candidate_paths(payload: dict, home: Path | None = None) -> tuple[set[Path],
     candidates = set(explicit)
     home = home or Path.home()
     ignored = [Path(p).resolve() for p in os.environ.get('CIMBLE_IGNORE_PATHS', '').split(os.pathsep) if p]
-    for scope in project_scopes(cwd):
+    # Exact file tools can opt out of broad discovery; opaque shell tools must not.
+    scopes = () if payload.get('explicit_only') is True else project_scopes(cwd)
+    for scope in scopes:
         for name in ('AGENTS.md', 'CLAUDE.md'):
             path = scope / name
             if path.is_file():

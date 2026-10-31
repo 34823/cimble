@@ -30,3 +30,16 @@ def test_generated_excluded_even_explicit_and_alias(tmp_path, monkeypatch):
         assert note not in paths
         assert not explicit
         assert not warnings(payload, tmp_path / 'cache.json', home=tmp_path)
+
+
+def test_explicit_only_does_not_discover_scopes(tmp_path, monkeypatch):
+    note = tmp_path / 'memory/topic.md'
+    note.parent.mkdir()
+    note.write_text('line\n' * 150)
+    def forbidden(*args):
+        raise AssertionError('exact file tools must not scan unrelated projects')
+    monkeypatch.setattr('cimble.codex_hook.project_scopes', forbidden)
+    payload = {'cwd': str(tmp_path), 'explicit_only': True,
+               'tool_input': {'file_path': str(note)}}
+    assert candidate_paths(payload, tmp_path) == ({note}, {note})
+    assert any(str(note) in message for message in warnings(payload, tmp_path / 'cache.json', home=tmp_path))

@@ -219,6 +219,14 @@ nudge (or, in `--strict`/`CIMBLE_STRICT` mode, an error Claude has to act on bef
 See `docs/methodology.md` for the full hook design and why `PostToolUse` beats a session-end
 check for this specific job.
 
+The JSON adapter `python -m cimble.codex_hook` also supports agent-independent storage:
+`CIMBLE_LEGACY_CLAUDE_MEMORY=0` disables legacy Claude project-memory discovery;
+`CIMBLE_IGNORE_PATHS` is an OS-path-separator-delimited list of excluded subtrees (including
+explicit paths and symlink aliases). A caller that knows the exact edited file may send
+`"explicit_only": true` with `tool_input.file_path` to avoid unrelated scope discovery.
+Do not set this for opaque shell commands: their changed paths are not known.
+`CIMBLE_CODEX_CACHE` selects an isolated cache directory, including for tests.
+
 ## Examples
 
 `examples/` has generalized, structure-only illustrations of a project before and after it's
